@@ -7,8 +7,8 @@
 clear
 addpath('C:\Users\Daniel.Feeney\Dropbox (Boa)\TMM Files')  
 %LR
-forceData = importForces('Skater_LR - TriangleForces.txt');
-kinData = importKinetics('Skater_LR - TriangleKinetics.txt');
+forceData = importForces('df bball skater 1 - TriangleForces.txt');
+kinData = importKinetics('df bball skater 1 - TriangleKinetics.txt');
 %Lace
 forceData = importForces('Skater_lace - TriangleForces.txt');
 kinData = importKinetics('Skater_lace - TriangleKinetics.txt');
@@ -27,6 +27,11 @@ forceData.shear3 = abs(forceData.ForceY3) + abs(forceData.ForceX3);
 forceData.ForceZ4 = -1 * forceData.ForceZ4;
 forceData.shear4 = abs(forceData.ForceY4) + abs(forceData.ForceX4);
 
+forceData.forceZ1 =  -1 * forceData.ForceZ1;
+plot(abs(forceData.ForceZ1))
+
+plot(kinData.LAnklePower)
+findpeaks(kinData.LAnklePower, 'MinPeakHeight', 100)
 %Calculate time on FP. This is more crude
 % Takeoffs = find(kinData.Takeoff);
 % Landings = find(kinData.Landing);
@@ -43,7 +48,7 @@ counter_var = 1; %initialize a counter variable to be used as an index below
 landing_int = 0;
 for n = 1:(length(landings_prelim) - 10)
     tmp_index = landings_prelim(n);
-    if (landings_prelim(n + 1) - landings_prelim(n) < 20) & (forceData.ForceZ4(tmp_index + 10) > 10) %if the difference between two zero locations is large enough, set that value to be a strike
+    if (landings_prelim(n + 1) - landings_prelim(n) < 20) %& (forceData.ForceZ4(tmp_index + 10) > 10) %if the difference between two zero locations is large enough, set that value to be a strike
         landing_int(counter_var) = landings_prelim(n + 1); %put this location into the zeros
         counter_var = counter_var +1; %Update this index
     end
@@ -63,7 +68,7 @@ counter_var = 1; %initialize a counter variable to be used as an index below
 takeoff_int = 0;
 for n = 1:(length(takeoff_prelim) - 10)
     tmp_index = takeoff_prelim(n);
-    if (takeoff_prelim(n + 1) - takeoff_prelim(n) > 20) & (forceData.ForceZ4(tmp_index + 5) > 10) %if the difference between two zero locations is large enough, set that value to be a strike
+    if (takeoff_prelim(n + 1) - takeoff_prelim(n) > 20) %& (forceData.ForceZ4(tmp_index + 5) > 10) %if the difference between two zero locations is large enough, set that value to be a strike
         takeoff_int(counter_var) = takeoff_prelim(n + 1); %put this location into the zeros
         counter_var = counter_var +1; %Update this index
     end
