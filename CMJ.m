@@ -1,26 +1,22 @@
-%%%%%%% Importing and analyzing data from TMM %%%%%%
-
-%%%%% TODO: export the Takeoff and Landing data at 1kHz with force to avoid
-%%%%% losing some granularity. Calculate Peak Power, and Work eccentric and
-%%%%% concentric based on the COM power.
+%% CMJ analysis
 
 clear
 addpath('C:\Users\Daniel.Feeney\Dropbox (Boa)\TMM Files')  
 %LR
-forceData = importForces('df bball skater 1 - TriangleForces.txt');
-kinData = importKinetics('df bball skater 1 - TriangleKinetics.txt');
+forceData = importForces('df bball cmj 1 - TriangleForces.txt');
+kinData = importKinetics('df bball cmj 1 - TriangleKinetics.txt');
 
 %Lace
-forceData = importForces('df sl bball skater 2 - TriangleForces.txt');
-kinData = importKinetics('df sl bball skater 2 - TriangleKinetics.txt');
+forceData = importForces('df sl bball cmj 2 - TriangleForces.txt');
+kinData = importKinetics('df sl bball cmj 2 - TriangleKinetics.txt');
 
 %Tongue Asym panel
-forceData = importForces('df t bball skater 2 - TriangleForces.txt');
-kinData = importKinetics('df t bball skater 2 - TriangleKinetics.txt');
+forceData = importForces('df t bball cmj 1 - TriangleForces.txt');
+kinData = importKinetics('df t bball cmj 1 - TriangleKinetics.txt');
 
 %Dual Panel
-forceData = importForces('df l bball skater 2 - TriangleForces.txt');
-kinData = importKinetics('df l bball skater 2 - TriangleKinetics.txt');
+forceData = importForces('df l bball cmj 1 - TriangleForces.txt');
+kinData = importKinetics('df l bball cmj 1 - TriangleKinetics.txt');
 
 
 
@@ -30,19 +26,22 @@ forceData.shear3 = abs(forceData.ForceY1) + abs(forceData.ForceX1);
 forceData.ForceZ1 = -1 * forceData.ForceZ1;
 forceData.shear4 = abs(forceData.ForceY1) + abs(forceData.ForceX1);
 
-forceData.forceZ1 =  -1 * forceData.ForceZ1;
 plot(abs(forceData.ForceZ1))
-
+hold on
+plot(abs(forceData.ForceZ3))
+print('select start and end of trial')
+[strt ends] = ginput(2)
 %% Peak Ankle Power metrics
 findpeaks(kinData.LAnklePower, 'MinPeakHeight', 100)
-[anklePks, ankleLocs] = findpeaks(kinData.LAnklePower, 'MinPeakHeight', 100);
+[LanklePks, ankleLocs] = findpeaks(kinData.LAnklePower, 'MinPeakHeight', 100);
 
+[RanklePks, ankleLocs] = findpeaks(kinData.RAnklePower, 'MinPeakHeight', 100);
 
 %% Calculation of the true zeros with heuristic. Find where the baseline is
 %between baseline - 2 and baseline + 2 and the force value 5 indices ahead is greater than 10.
 %Then remove indices that are too close together.
-baseline_signal = mean(forceData.ForceZ1(10:100));
-baseline_noise = std(forceData.ForceZ1(10:100));
+baseline_signal = mean(forceData.ForceZ1(floor(strt(1)):floor(strt(1))+100));
+baseline_noise = std(forceData.ForceZ1(floor(strt(1)):floor(strt(1))+100));
 
 landing_prelim = find((forceData.ForceZ1 < baseline_signal + 1) & (forceData.ForceZ1 > baseline_signal - 1)); %find all instances where the force signal is 0
 counter_var = 1; %initialize a counter variable to be used as an index below
@@ -63,12 +62,12 @@ for land = 1:(length(takeoff_int)-1)
    end
 end
 
-figure
-plot(forceData.ForceZ1)
-hold on
-for zlocation = 1:length(true_takeoffs)
-    line([true_takeoffs(zlocation) true_takeoffs(zlocation)], [0 800], 'Color','b'); 
-end
+% figure %Comment this out to debug just the takeoffs 
+% plot(forceData.ForceZ1)
+% hold on
+% for zlocation = 1:length(true_takeoffs)
+%     line([true_takeoffs(zlocation) true_takeoffs(zlocation)], [0 800], 'Color','b'); 
+% end
 %% Find the true landings
 landing_prelim = find((forceData.ForceZ1 < (baseline_signal +2) ) & (forceData.ForceZ1 > (baseline_signal -2))); %find all instances where the force signal is ~0
 counter_var = 1; %initialize a counter variable to be used as an index below
@@ -100,26 +99,18 @@ for zlocation = 1:length(true_landing)
     line([true_landing(zlocation) true_landing(zlocation)], [0 800], 'Color','r'); 
 end
 
-no_landings = length(true_landing);
-Time_On_FP = (true_landing(1:no_landings) - true_takeoffs(1:no_landings)) ./ 1000; 
+no_landings = length(true_takeoffs);
+Time_On_FP = (true_takeoffs(2:end) - true_landing) ./ 1000; 
 Time_On_FP = Time_On_FP';
 
-%% Shear RFD
+%% Vertical RFD
 
 figure
-plot(forceData.shear4)
-print('Click the approximate start and peak for each landing')
-[locs, vals] = ginput(length(anklePks)*2); %Change this to be smaller
-RFD = zeros(5,1);
-for hit = 1:5
-    RFD(hit) = vals(hit*2) / ((locs(hit*2)-locs((hit*2)-1))/100)
+plot(forceData.ForceZ1)
+for hit = 1:length(true_takeoffs)
+    RFD(hit) = (forceData.ForceZ1(true_takeoffs(hit) + 100)) / 0.1;
 end
-
+RFD = RFD';
 %% Time to complete
 
 TimeToComplete = (true_landing(end) - true_takeoffs(1) ) / 1000
-
-
-%% Collate results
-%Time_On_FP(5) = 0;
-output = horzcat(anklePks, Time_On_FP, RFD)
