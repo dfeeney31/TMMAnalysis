@@ -108,13 +108,11 @@ Time_On_FP = Time_On_FP';
 
 figure
 plot(forceData.shear4)
-print('Click the approximate start and peak for each landing')
-[locs, vals] = ginput(length(anklePks)*2); %Change this to be smaller
 RFD = zeros(5,1);
-for hit = 1:5
-    RFD(hit) = vals(hit*2) / ((locs(hit*2)-locs((hit*2)-1))/100)
+for hit = 1:length(true_takeoffs)
+    RFD(hit) = (forceData.shear4(true_takeoffs(hit) + 100)) / 0.1;
 end
-
+RFD = RFD';
 %% Time to complete
 
 TimeToComplete = (true_landing(end) - true_takeoffs(1) ) / 1000
