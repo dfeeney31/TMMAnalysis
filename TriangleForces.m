@@ -6,9 +6,9 @@
 
 clear
 addpath('C:\Users\Daniel.Feeney\Dropbox (Boa)\TMM Files')  
-forceData = importForces('C:\Users\Daniel.Feeney\Dropbox (Boa)\AgilityPerformance\NB Hierro\lace skater 2 - TriangleForces.txt');
+forceData = importForces('C:\Users\Daniel.Feeney\Dropbox (Boa)\AgilityPerformance\NB Hierro\dualdial triangle 1 - TriangleForces.txt');
 
-
+noLandings = 4;
 %% Conversion and creating variables
 forceData.ForceZ = -1 * forceData.LForceZ;
 forceData.shear = abs(forceData.LForceY) + abs(forceData.LForceX);
@@ -23,7 +23,7 @@ plot(forceData.shear)
 %% find takeoffs and landings
 
 allZeros = find(forceData.ForceZ == 0);
-landing = zeros(1,6);
+landing = zeros(1,noLandings);
 counterVar = 1;
 for i = 1:length(allZeros)
     
@@ -36,7 +36,7 @@ for i = 1:length(allZeros)
 end
 
 % Take off
-TO = zeros(1,6);
+TO = zeros(1,noLandings);
 counterVar = 1;
 for i = 2:length(allZeros)
     
@@ -52,8 +52,8 @@ end
 Time_On_FP = (TO - landing) ./ 1000; Time_On_FP = Time_On_FP';
 [shearPeaks, shearLocs] = findpeaks(forceData.shear, 'minpeakHeight', 300, 'minpeakdistance',1000)
 
-RFD_shear = zeros(1,6);
-for jump = 1:6
+RFD_shear = zeros(1,noLandings);
+for jump = 1:noLandings
     RFD_shear(jump) = (forceData.shear(shearLocs(jump)) - forceData.shear(shearLocs(jump)-100)) / 0.1;
 end
 
