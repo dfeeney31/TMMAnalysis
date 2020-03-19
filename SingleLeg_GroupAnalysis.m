@@ -6,9 +6,6 @@ addpath('C:\Users\Daniel.Feeney\Dropbox (Boa)\TMM Files') % add path to source c
 % The files should be named sub_balance_Config_trialNo - Forces.txt
 input_dir = 'C:\Users\Daniel.Feeney\Dropbox (Boa)\Hike Work Research\Data\BalanceMeasures';% Change to correct filepath
 
-shoes = {'DD', 'Lace', 'SD'}; %Shoe names, in ALPHABETICAL ORDER. Remember to change legend at bottom to correct number of shoes.
-line = {'-k','-g', '-b'}; % Add enough line colors for each shoe.
-
 cd(input_dir)
 files = dir('*.txt');
 dataList = {files.name};
@@ -19,7 +16,7 @@ NumbFiles = length(f);
 outputAllConfigs = {'SubName','Config','TrialNo','TimeToStab','pkZ', 'stabZ', 'stabY', 'stabX','RMSx','RMSy', 'RMSvx', 'RMSvy', 'DistX', 'DistY', 'AvgVX', 'AvgVY'};
 
 % Set constants
-fThresh = 10; %Force threshold. Values below this are set to 0
+fThresh = 50; %Force threshold. Values below this are set to 0
 steadyLength = 200; %length of window to look at steady balancing
     
 for s = 1:NumbFiles
@@ -88,3 +85,7 @@ for s = 1:NumbFiles
     outputAllConfigs = vertcat(outputAllConfigs, KinData);
     
 end
+% Convert cell to a table and use first row as variable names
+T = cell2table(outputAllConfigs(2:end,:),'VariableNames',outputAllConfigs(1,:))
+% Write the table to a CSV file
+writetable(T,'SLTestFile.csv')
